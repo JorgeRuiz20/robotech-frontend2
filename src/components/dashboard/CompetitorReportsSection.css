@@ -1,0 +1,232 @@
+/* src/components/dashboard/CompetitorReportsSection.css */
+.competitor-reports-section {
+  padding: 2rem;
+}
+
+.reports-header {
+  margin-bottom: 2rem;
+}
+
+.reports-header h2 {
+  color: var(--neon);
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+.reports-header p {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.torneos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.torneo-card {
+  background: var(--card-bg);
+  border: 1px solid rgba(0, 200, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.torneo-card:hover {
+  border-color: rgba(0, 200, 255, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(0, 200, 255, 0.1);
+  background: rgba(0, 200, 255, 0.03);
+}
+
+.header-content h4 {
+  color: var(--neon);
+  font-size: 1.2rem;
+  margin: 0 0 0.3rem 0;
+}
+
+.categoria {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.badge {
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.badge-pendiente {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.badge-activo {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.badge-finalizado {
+  background: rgba(158, 158, 158, 0.2);
+  color: #9e9e9e;
+  border: 1px solid rgba(158, 158, 158, 0.3);
+}
+
+.card-body {
+  padding: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(0, 200, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 200, 255, 0.1);
+}
+
+.info-item .icon {
+  font-size: 1.5rem;
+}
+
+.info-item > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.info-item .label {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.info-item .value {
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.card-actions {
+  margin-bottom: 1rem;
+}
+
+.status-note {
+  padding: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-note.completed {
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+}
+
+.status-note.active {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  color: #f44336;
+}
+
+.status-note.pending {
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  color: #ffc107;
+}
+
+/* Info Box */
+.info-box {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(0, 200, 255, 0.05);
+  border: 1px solid rgba(0, 200, 255, 0.2);
+  border-radius: 12px;
+  margin-top: 2rem;
+}
+
+.info-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.info-content h4 {
+  color: var(--neon);
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.info-content p {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .competitor-reports-section {
+    padding: 1rem;
+  }
+
+  .torneos-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .info-icon {
+    margin: 0 auto;
+  }
+}

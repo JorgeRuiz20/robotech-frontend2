@@ -1,0 +1,551 @@
+/* src/components/dashboard/JudgePanel.css */
+
+/* ============= VARIABLES ============= */
+:root {
+  --background: #0a0a0f;
+  --card-bg: #1a1a2e;
+  --neon: #00c8ff;
+  --neon-glow: rgba(0, 200, 255, 0.5);
+  --success: #00ff88;
+  --warning: #ffd700;
+  --danger: #ff4757;
+  --muted: #8892b0;
+  --text: #ccd6f6;
+}
+
+/* ============= BASE DASHBOARD ============= */
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--background) 0%, #16213e 100%);
+  padding: 2rem;
+  color: var(--text);
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(0,200,255,0.1), rgba(0,255,136,0.1));
+  border-radius: 16px;
+  border: 2px solid rgba(0,200,255,0.3);
+}
+
+.dashboard-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+  background: linear-gradient(90deg, var(--neon), var(--success));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+}
+
+.dashboard-header p {
+  color: var(--muted);
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+/* ============= TABS ============= */
+.dashboard-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.dashboard-tabs button {
+  padding: 1rem 2rem;
+  background: rgba(26, 26, 46, 0.6);
+  border: 2px solid rgba(0,200,255,0.3);
+  border-radius: 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dashboard-tabs button:hover {
+  background: rgba(0,200,255,0.1);
+  border-color: var(--neon);
+  transform: translateY(-2px);
+}
+
+.dashboard-tabs button.active {
+  background: linear-gradient(135deg, rgba(0,200,255,0.3), rgba(0,255,136,0.2));
+  border-color: var(--neon);
+  box-shadow: 0 4px 20px var(--neon-glow);
+}
+
+/* ============= CONTENT ============= */
+.dashboard-content {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-content h2 {
+  color: var(--neon);
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+/* ============= DATA GRID (Cards) ============= */
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.card {
+  background: rgba(26, 26, 46, 0.8);
+  border: 2px solid rgba(0,200,255,0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  border-color: var(--neon);
+  box-shadow: 0 8px 30px var(--neon-glow);
+}
+
+.card h3 {
+  margin: 0 0 1rem 0;
+  color: white;
+  font-size: 1.3rem;
+}
+
+.card p {
+  margin: 0.5rem 0;
+  color: var(--muted);
+}
+
+.card strong {
+  color: var(--text);
+}
+
+/* ============= BADGES ============= */
+.badge {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: bold;
+}
+
+.badge-pendiente {
+  background: rgba(255, 215, 0, 0.2);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.badge-activo {
+  background: rgba(0, 255, 136, 0.2);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.badge-finalizado {
+  background: rgba(128, 128, 128, 0.2);
+  color: var(--muted);
+  border: 1px solid var(--muted);
+}
+
+/* ============= BUTTONS ============= */
+.btn-primary {
+  background: linear-gradient(135deg, var(--neon), var(--success));
+  color: #0a0a0f;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px var(--neon-glow);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: rgba(26, 26, 46, 0.8);
+  color: var(--text);
+  border: 2px solid rgba(0,200,255,0.5);
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.btn-secondary:hover {
+  background: rgba(0,200,255,0.1);
+  border-color: var(--neon);
+}
+
+/* ============= LOADING ============= */
+.loading {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--neon);
+  font-size: 1.2rem;
+  animation: pulse 2s infinite;
+}
+
+/* ============= BRACKET CONTAINER ============= */
+.bracket-container {
+  display: flex;
+  gap: 3rem;
+  overflow-x: auto;
+  padding: 1.5rem;
+  min-height: 500px;
+  background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,200,255,0.1);
+}
+
+/* ============= FASE COLUMN ============= */
+.fase-column {
+  /* ✅ REDUCIDO: de 350px a 280px */
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+  /* ✅ REDUCIDO: de 1.5rem a 1rem */
+  gap: 1rem;
+}
+
+.fase-header {
+  color: var(--neon);
+  text-align: center;
+  /* ✅ REDUCIDO: de 1.4rem a 1.2rem */
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  /* ✅ REDUCIDO: de 1rem a 0.7rem */
+  padding: 0.7rem;
+  background: linear-gradient(90deg, transparent, rgba(0,200,255,0.2), transparent);
+  border-top: 2px solid var(--neon);
+  border-bottom: 2px solid var(--neon);
+  border-radius: 8px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px var(--neon-glow);
+}
+
+.enfrentamientos-list {
+  display: flex;
+  flex-direction: column;
+  /* ✅ REDUCIDO: de 2rem a 1.2rem */
+  gap: 1.2rem;
+}
+
+/* ============= ENFRENTAMIENTO CARD ============= */
+.enfrentamiento-card {
+  background: rgba(26, 26, 46, 0.95);
+  border: 2px solid rgba(0, 200, 255, 0.3);
+  border-radius: 12px;
+  /* ✅ REDUCIDO: de 1.2rem a 0.8rem */
+  padding: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.enfrentamiento-card.pendiente:hover {
+  transform: translateY(-4px);
+  border-color: var(--neon);
+  box-shadow: 0 8px 30px var(--neon-glow);
+}
+
+.enfrentamiento-card.completado {
+  opacity: 0.85;
+  cursor: default;
+  border-color: rgba(0,255,136,0.3);
+}
+
+/* ============= PARTICIPANTE ============= */
+.participante {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* ✅ REDUCIDO: de 1rem a 0.7rem */
+  padding: 0.7rem;
+  background: rgba(0,200,255,0.05);
+  border-radius: 8px;
+  /* ✅ REDUCIDO: de 0.8rem a 0.5rem */
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  position: relative; /* ✅ AGREGAR ESTA LÍNEA */
+}
+
+.participante.ganador {
+  background: linear-gradient(90deg, rgba(0,255,136,0.2), transparent);
+  border: 2px solid var(--success);
+  box-shadow: 0 0 20px rgba(0,255,136,0.2);
+}
+
+.participante .info {
+  display: flex;
+  flex-direction: column;
+  /* ✅ REDUCIDO: de 0.3rem a 0.2rem */
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.participante .nombre {
+  font-weight: 700;
+  color: white;
+  /* ✅ REDUCIDO: de 1.05rem a 0.95rem */
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+}
+
+.participante .robot {
+  /* ✅ REDUCIDO: de 0.85rem a 0.75rem */
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.participante .puntos {
+  /* ✅ REDUCIDO: de 2rem a 1.5rem */
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--neon);
+  /* ✅ REDUCIDO: de 0 1rem a 0 0.7rem */
+  padding: 0 0.7rem;
+  text-shadow: 0 0 10px var(--neon-glow);
+}
+
+/* ============= VS SEPARATOR ============= */
+.vs-separator {
+  text-align: center;
+  /* ✅ REDUCIDO: de 1.2rem a 0.9rem */
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: var(--warning);
+  letter-spacing: 3px;
+  /* ✅ REDUCIDO: de 0.5rem 0 to 0.3rem 0 */
+  margin: 0.3rem 0;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* ============= BADGE GANADOR ============= */
+.badge-ganador {
+  position: absolute;
+  top: 0.05rem;
+  right: 0.5rem;
+  background: rgba(0, 255, 136, 0.3);
+  color: var(--success);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.55rem;
+  font-weight: bold;
+  border: 1px solid var(--success);
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+  white-space: nowrap;
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 136, 0.6);
+  }
+}
+
+/* ============= CLICK HINT ============= */
+.click-hint {
+  text-align: center;
+  /* ✅ REDUCIDO: de 0.8rem to 0.7rem */
+  font-size: 0.7rem;
+  color: var(--muted);
+  /* ✅ REDUCIDO: de 0.5rem to 0.3rem */
+  margin-top: 0.3rem;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ============= BRACKET HEADER ============= */
+.bracket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: rgba(26, 26, 46, 0.8);
+  border: 2px solid rgba(0,200,255,0.3);
+  border-radius: 12px;
+}
+
+.bracket-header h2 {
+  margin: 0 0 0.5rem 0;
+  color: var(--neon);
+}
+
+.progress-text {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* ============= EMPTY STATE ============= */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--muted);
+  font-size: 1.2rem;
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ============= BUTTON GROUP ============= */
+.button-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.button-group button {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* ============= ERROR BANNER ============= */
+.error-banner {
+  background: rgba(255, 71, 87, 0.1);
+  border: 2px solid var(--danger);
+  color: var(--danger);
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* ============= MODAL OVERLAY ============= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ============= RESULTADO FORM ============= */
+.resultado-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.resultado-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.resultado-input label {
+  font-weight: bold;
+  color: var(--neon);
+  font-size: 1.1rem;
+}
+
+.robot-name {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.resultado-input input {
+  padding: 1rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  background: rgba(0, 200, 255, 0.1);
+  border: 2px solid rgba(0, 200, 255, 0.3);
+  border-radius: 10px;
+  color: var(--neon);
+  transition: all 0.3s ease;
+}
+
+.resultado-input input:focus {
+  outline: none;
+  border-color: var(--neon);
+  box-shadow: 0 0 20px var(--neon-glow);
+}
+
+.vs-modal {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--warning);
+  letter-spacing: 5px;
+  margin: 1rem 0;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+/* ============= MODAL ACTIONS ============= */
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.modal-actions button {
+  flex: 1;
+}
+
+/* ============= FORM CARD ============= */
+.form-card {
+  background: rgba(26, 26, 46, 0.95);
+  border: 2px solid rgba(0,200,255,0.3);
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.form-card h3 {
+  margin: 0 0 1.5rem 0;
+  color: var(--neon);
+  font-size: 1.5rem;
+}
