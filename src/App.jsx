@@ -7,6 +7,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import HistorialTorneos from './components/torneos/HistorialTorneos';
 import BracketPublico from './components/torneos/BracketPublico';
 
+// ✅ ÚNICO CAMBIO: importar GlobalLoadingProvider
+import { GlobalLoadingProvider } from './context/GlobalLoadingContext';
+
 // Pages
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -19,7 +22,7 @@ import RecuperarPassword from './pages/RecuperarPassword';
 import Navbar from './components/common/Navbar';
 import PrivateRoute from './components/common/PrivateRoute';
 
-// CSS - ¡IMPORTANTE! Importa el archivo CSS
+// CSS
 import './App.css';
 
 function AppRoutes() {
@@ -46,6 +49,7 @@ function AppRoutes() {
         <Route path="/reset-password" element={<RecuperarPassword />} />
         <Route path="/torneos" element={<TorneosPublicos />} />
         <Route path="/brackets" element={<BracketPublico />} />
+        <Route path="/brackets/:torneoId" element={<BracketPublico />} />
         <Route path="/historial" element={<HistorialTorneos />} />
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={
@@ -59,23 +63,26 @@ function AppRoutes() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-        />
-      </AuthProvider>
-    </BrowserRouter>
+    // ✅ ÚNICO CAMBIO: GlobalLoadingProvider envuelve todo el árbol
+    <GlobalLoadingProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+          />
+        </AuthProvider>
+      </BrowserRouter>
+    </GlobalLoadingProvider>
   );
 }
 

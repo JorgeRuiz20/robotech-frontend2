@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { torneoService } from '../services/authService';
-import RankingTorneo from '../components/torneos/RankingTorneo'; // ✅ AGREGAR
+import RankingTorneo from '../components/torneos/RankingTorneo';
 
 function TorneosPublicos() {
   const [torneos, setTorneos] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [rankingModal, setRankingModal] = useState(null); // ✅ AGREGAR
-
+  const [rankingModal, setRankingModal] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadTorneos();
@@ -22,6 +23,10 @@ function TorneosPublicos() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const irABrackets = (torneoId) => {
+    navigate(`/brackets/${torneoId}`);
   };
 
   return (
@@ -46,21 +51,28 @@ function TorneosPublicos() {
                 <p>{torneo.descripcion}</p>
                 <p><strong>📅 Categoría:</strong> {torneo.categoriaNombre}</p>
                 <p><strong>🏅 Estado:</strong> <span className="badge badge-aprobado">{torneo.estado}</span></p>
-                {/* ✅ AGREGAR ESTE BOTÓN */}
-                <button
-                  onClick={() => setRankingModal(torneo)}
-                  className="btn btn-primary"
-                  style={{ marginTop: '10px' }}
-                >
-                  📊 Ver Ranking
-                </button>
+                
+                <div style={{ display: 'flex', gap: '10px', marginTop: '10px', flexDirection: 'column' }}>
+                  <button
+                    onClick={() => setRankingModal(torneo)}
+                    className="btn btn-primary"
+                  >
+                    📊 Ver Ranking
+                  </button>
+                  
+                  <button
+                    onClick={() => irABrackets(torneo.id)}
+                    className="btn btn-secondary"
+                  >
+                    🏆 Ver Brackets
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
       
-      {/* ✅ AGREGAR ESTO */}
       {rankingModal && (
         <RankingTorneo
           torneoId={rankingModal.id}

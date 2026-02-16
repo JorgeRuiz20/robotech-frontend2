@@ -30,7 +30,6 @@ function Navbar() {
         <ul className="navbar-menu">
           <li><Link to="/">Inicio</Link></li>
           <li><Link to="/torneos">Torneos</Link></li>
-          <li><Link to="/brackets"> Brackets</Link></li>
           <li><Link to="/historial">Historial</Link></li>
 
           {isAuthenticated ? (

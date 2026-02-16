@@ -1,5 +1,6 @@
 // src/components/torneos/HistorialTorneos.jsx
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { torneoService } from '../../services/authService';
 import RankingTorneo from './RankingTorneo';
 import './HistorialTorneos.css';
@@ -13,6 +14,7 @@ function HistorialTorneos() {
   const [fechaFin, setFechaFin] = useState('');
   const [busqueda, setBusqueda] = useState('');
   const [rankingModal, setRankingModal] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     cargarTorneos();
@@ -132,6 +134,10 @@ function HistorialTorneos() {
 
   const verRanking = (torneo) => {
     setRankingModal(torneo);
+  };
+
+  const irABrackets = (torneoId) => {
+    navigate(`/brackets/${torneoId}`);
   };
 
   const limpiarFiltros = () => {
@@ -287,7 +293,7 @@ function HistorialTorneos() {
                     </div>
                   )}
 
-                  {/* Stats - Valores corregidos del backend */}
+                  {/* Stats */}
                   <div className="stats-row">
                     <div className="stat">
                       <div className="stat-value">
@@ -324,12 +330,20 @@ function HistorialTorneos() {
                   )}
 
                   {torneo.estado === 'ACTIVO' && (
-                    <button
-                      onClick={() => verRanking(torneo)}
-                      className="btn-action btn-ranking"
-                    >
-                      📊 Ver Ranking en Vivo
-                    </button>
+                    <>
+                      <button
+                        onClick={() => verRanking(torneo)}
+                        className="btn-action btn-ranking"
+                      >
+                        📊 Ver Ranking en Vivo
+                      </button>
+                      <button
+                        onClick={() => irABrackets(torneo.id)}
+                        className="btn-action btn-secondary-action"
+                      >
+                        🏆 Ver Brackets
+                      </button>
+                    </>
                   )}
 
                   {torneo.estado === 'PENDIENTE' && (

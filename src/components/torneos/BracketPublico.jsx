@@ -1,10 +1,13 @@
 // src/components/torneos/BracketPublico.jsx
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { torneoService } from '../../services/authService';
 import { toast } from 'react-toastify';
 import './BracketPublico.css';
 
 function BracketPublico() {
+  const { torneoId } = useParams(); // Obtener torneoId de la URL
+  const navigate = useNavigate();
   const [torneos, setTorneos] = useState([]);
   const [torneoSeleccionado, setTorneoSeleccionado] = useState(null);
   const [bracket, setBracket] = useState(null);
@@ -12,11 +15,34 @@ function BracketPublico() {
 
   useEffect(() => {
     loadTorneos();
+  }, []);
+
+  // Cuando cambien los torneos o el torneoId de la URL, seleccionar el torneo correcto
+  useEffect(() => {
+    if (torneos.length > 0) {
+      if (torneoId) {
+        // Si hay torneoId en la URL, buscar ese torneo
+        const torneo = torneos.find(t => t.id === parseInt(torneoId));
+        if (torneo) {
+          seleccionarTorneo(torneo);
+        } else {
+          toast.error('Torneo no encontrado');
+          navigate('/brackets'); // Redirigir a brackets sin ID
+        }
+      } else {
+        // Si no hay torneoId, seleccionar el primero
+        seleccionarTorneo(torneos[0]);
+        navigate(`/brackets/${torneos[0].id}`, { replace: true });
+      }
+    }
+  }, [torneos, torneoId]);
+
+  // Auto-refresh cada 10 segundos
+  useEffect(() => {
+    if (!torneoSeleccionado) return;
     
     const interval = setInterval(() => {
-      if (torneoSeleccionado) {
-        seleccionarTorneo(torneoSeleccionado, true);
-      }
+      seleccionarTorneo(torneoSeleccionado, true);
     }, 10000);
 
     return () => clearInterval(interval);
@@ -30,10 +56,6 @@ function BracketPublico() {
         t.estado === 'ACTIVO' || t.estado === 'FINALIZADO'
       );
       setTorneos(torneosActivos);
-      
-      if (torneosActivos.length > 0 && !torneoSeleccionado) {
-        seleccionarTorneo(torneosActivos[0]);
-      }
     } catch (err) {
       console.error('Error cargando torneos:', err);
       toast.error('Error al cargar torneos');
@@ -49,6 +71,11 @@ function BracketPublico() {
     try {
       const res = await torneoService.getBracket(torneo.id);
       setBracket(res.data);
+      
+      // Actualizar URL si es necesario
+      if (torneoId !== torneo.id.toString()) {
+        navigate(`/brackets/${torneo.id}`, { replace: true });
+      }
     } catch (err) {
       console.error('Error cargando bracket:', err);
       if (!silent) toast.error('Error al cargar el bracket');
@@ -246,7 +273,7 @@ function BracketPublico() {
       : enfrentamiento.participante2Club;
 
     return (
-      <div className="bracket-pub-match">
+      <div className="bracket-pub-match final-single">
         <Team
           nombre={nombre}
           robot={robot}
@@ -472,21 +499,6 @@ function BracketPublico() {
 
   return (
     <div className="bracket-pub-wrapper">
-      {/* Selector de torneos */}
-      {torneos.length > 1 && (
-        <div className="bracket-pub-selector">
-          {torneos.map(torneo => (
-            <button
-              key={torneo.id}
-              className={`bracket-pub-torneo-btn ${torneoSeleccionado?.id === torneo.id ? 'activo' : ''}`}
-              onClick={() => seleccionarTorneo(torneo)}
-            >
-              {torneo.nombre}
-            </button>
-          ))}
-        </div>
-      )}
-
       {renderBracket()}
     </div>
   );

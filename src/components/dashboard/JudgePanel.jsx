@@ -1,7 +1,10 @@
+// src/components/dashboard/JudgePanel.jsx
 import { useState, useEffect } from 'react';
 import { torneoService } from "../../services/authService";
 import './JudgePanel.css';
 import JudgeReportsSection from './JudgeReportsSection';
+import { useAsyncAction } from '../../hooks/useAsyncAction';
+import { useGlobalLoading } from '../../context/GlobalLoadingContext';
 
 function JudgePanel() {
   const [activeTab, setActiveTab] = useState('torneos');
@@ -14,14 +17,15 @@ function JudgePanel() {
   const [puntos2, setPuntos2] = useState('');
   const [error, setError] = useState('');
 
-  // ✅ NUEVO: Recuperar estado del localStorage al cargar
+  // ✅ Contexto global: si cualquier acción en el sistema está corriendo
+  const { isAnyLoading } = useGlobalLoading();
+
   useEffect(() => {
     const savedState = localStorage.getItem('judgePanel_state');
     if (savedState) {
       try {
         const { torneoId, tab } = JSON.parse(savedState);
         if (torneoId && tab === 'bracket') {
-          // Cargar torneo guardado
           loadTorneoFromStorage(torneoId);
         }
       } catch (err) {
@@ -31,7 +35,6 @@ function JudgePanel() {
     loadTorneos();
   }, []);
 
-  // ✅ NUEVO: Guardar estado cuando cambia el torneo seleccionado
   useEffect(() => {
     if (torneoSeleccionado && activeTab === 'bracket') {
       localStorage.setItem('judgePanel_state', JSON.stringify({
@@ -72,40 +75,26 @@ function JudgePanel() {
     }
   };
 
-  const handleAsignarModalidad = async (torneoId, modalidad) => {
-    try {
+  // ✅ Protegido: asignar modalidad (bloqueará AMBOS botones "Eliminatoria" y "Todos vs Todos")
+  const [handleAsignarModalidad, isAsignando] = useAsyncAction(
+    async (torneoId, modalidad) => {
       await torneoService.asignarModalidad(torneoId, modalidad);
       alert('✅ Modalidad asignada exitosamente');
       await loadTorneos();
-    } catch (err) {
-      const errorMsg = err.response?.data?.error || err.message;
-      if (errorMsg.includes('No eres el juez asignado')) {
-        alert('⛔ ' + errorMsg);
-      } else {
-        alert('Error: ' + errorMsg);
-      }
     }
-  };
+  );
 
-  const handleGenerarEnfrentamientos = async (torneo) => {
-    if (!confirm(`¿Generar enfrentamientos para "${torneo.nombre}"?`)) return;
-
-    try {
+  // ✅ Protegido: generar enfrentamientos
+  const [handleGenerarEnfrentamientos, isGenerando] = useAsyncAction(
+    async (torneo) => {
+      if (!confirm(`¿Generar enfrentamientos para "${torneo.nombre}"?`)) return;
       const res = await torneoService.generarEnfrentamientos(torneo.id);
       alert(`✅ ${res.data.mensaje}\n\nModalidad: ${res.data.modalidad}\nEnfrentamientos: ${res.data.enfrentamientos}\nFase: ${res.data.faseActual}`);
-      
       setTorneoSeleccionado(torneo);
       setActiveTab('bracket');
       await loadBracket(torneo.id);
-    } catch (err) {
-      const errorMsg = err.response?.data?.error || err.message;
-      if (errorMsg.includes('No eres el juez asignado')) {
-        alert('⛔ ' + errorMsg);
-      } else {
-        alert('Error: ' + errorMsg);
-      }
     }
-  };
+  );
 
   const loadBracket = async (torneoId) => {
     setLoading(true);
@@ -121,50 +110,47 @@ function JudgePanel() {
     }
   };
 
-  const handleRegistrarResultado = async () => {
-    if (!puntos1 || !puntos2) {
-      alert('⚠️ Debes ingresar ambos puntajes');
-      return;
-    }
+  // ✅ Protegido: registrar resultado
+  const [handleRegistrarResultado, isRegistrando] = useAsyncAction(
+    async () => {
+      if (!puntos1 || !puntos2) {
+        alert('⚠️ Debes ingresar ambos puntajes');
+        return;
+      }
+      if (!confirm(`¿Confirmar resultado?\n\n${selectedEnf.participante1Robot}: ${puntos1}\n${selectedEnf.participante2Robot}: ${puntos2}`)) return;
 
-    if (!confirm(`¿Confirmar resultado?\n\n${selectedEnf.participante1Robot}: ${puntos1}\n${selectedEnf.participante2Robot}: ${puntos2}`)) {
-      return;
-    }
-
-    try {
       await torneoService.registrarResultado(
         torneoSeleccionado.id,
         selectedEnf.id,
         parseInt(puntos1),
         parseInt(puntos2)
       );
-      
+
       alert('✅ Resultado registrado');
       setSelectedEnf(null);
       setPuntos1('');
       setPuntos2('');
       await loadBracket(torneoSeleccionado.id);
-    } catch (err) {
-      alert('Error: ' + (err.response?.data?.error || err.message));
     }
-  };
+  );
 
-  const handleAvanzarGanadores = async () => {
-    if (!bracket) return;
+  // ✅ Protegido: avanzar ganadores
+  const [handleAvanzarGanadores, isAvanzando] = useAsyncAction(
+    async () => {
+      if (!bracket) return;
 
-    const pendientes = Object.values(bracket.bracket).flat()
-      .filter(e => e.resultado === 'PENDIENTE').length;
+      const pendientes = Object.values(bracket.bracket).flat()
+        .filter(e => e.resultado === 'PENDIENTE').length;
 
-    if (pendientes > 0) {
-      alert(`⚠️ Aún hay ${pendientes} enfrentamiento(s) pendiente(s) en la fase actual`);
-      return;
-    }
+      if (pendientes > 0) {
+        alert(`⚠️ Aún hay ${pendientes} enfrentamiento(s) pendiente(s) en la fase actual`);
+        return;
+      }
 
-    if (!confirm('¿Avanzar ganadores a la siguiente fase?')) return;
+      if (!confirm('¿Avanzar ganadores a la siguiente fase?')) return;
 
-    try {
       const res = await torneoService.avanzarGanadores(torneoSeleccionado.id);
-      
+
       if (res.data.finalizado) {
         alert(`🏆 ¡TORNEO FINALIZADO!\n\n${res.data.mensaje}`);
         setActiveTab('torneos');
@@ -176,38 +162,20 @@ function JudgePanel() {
         alert(`✅ ${res.data.mensaje}\n\nNueva fase: ${res.data.nuevaFase}\nGanadores avanzados: ${res.data.ganadoresAvanzados}`);
         await loadBracket(torneoSeleccionado.id);
       }
-    } catch (err) {
-      alert('Error: ' + (err.response?.data?.error || err.message));
     }
-  };
+  );
 
   const getEstadoTorneo = (torneo) => {
     if (!torneo.modalidad) {
-      return {
-        estado: 'SIN_MODALIDAD',
-        mensaje: '⚠️ Sin modalidad asignada',
-        accion: 'ASIGNAR_MODALIDAD'
-      };
+      return { estado: 'SIN_MODALIDAD', mensaje: '⚠️ Sin modalidad asignada', accion: 'ASIGNAR_MODALIDAD' };
     }
-    
     if (torneo.modalidad && (!bracket || bracket.totalEnfrentamientos === 0)) {
-      return {
-        estado: 'MODALIDAD_ASIGNADA',
-        mensaje: `✅ Modalidad: ${torneo.modalidad}`,
-        accion: 'GENERAR_ENFRENTAMIENTOS'
-      };
+      return { estado: 'MODALIDAD_ASIGNADA', mensaje: `✅ Modalidad: ${torneo.modalidad}`, accion: 'GENERAR_ENFRENTAMIENTOS' };
     }
-    
-    return {
-      estado: 'ENFRENTAMIENTOS_ACTIVOS',
-      mensaje: `🎯 ${torneo.modalidad} - Fase: ${torneo.faseActual || 'N/A'}`,
-      accion: 'VER_BRACKET'
-    };
+    return { estado: 'ENFRENTAMIENTOS_ACTIVOS', mensaje: `🎯 ${torneo.modalidad} - Fase: ${torneo.faseActual || 'N/A'}`, accion: 'VER_BRACKET' };
   };
 
-  // ✅ CORREGIDO: Función para determinar ganador basado en resultado del backend
   const getGanador = (enf) => {
-    // El backend retorna resultado: 'GANA_1' o 'GANA_2' o 'PENDIENTE'
     if (enf.resultado === 'GANA_1') return 1;
     if (enf.resultado === 'GANA_2') return 2;
     return null;
@@ -216,56 +184,43 @@ function JudgePanel() {
   const EnfrentamientoCard = ({ enf }) => {
     const ganador = getGanador(enf);
     const isPendiente = enf.resultado === 'PENDIENTE';
-    
+
     return (
-      <div 
+      <div
         className={`enfrentamiento-card ${isPendiente ? 'pendiente' : 'completado'}`}
-        onClick={() => isPendiente && setSelectedEnf(enf)}
+        onClick={() => {
+          // ✅ No abrir modal si hay una acción en curso
+          if (!isAnyLoading && isPendiente) setSelectedEnf(enf);
+        }}
+        style={{ cursor: isAnyLoading ? 'not-allowed' : isPendiente ? 'pointer' : 'default' }}
       >
-        {/* Participante 1 */}
         <div className={`participante ${ganador === 1 ? 'ganador' : ''}`}>
           <div className="info">
             <span className="nombre">{enf.participante1Nombre}</span>
             <span className="robot">🤖 {enf.participante1Robot}</span>
           </div>
-          <div className="puntos">
-            {!isPendiente ? enf.puntosParticipante1 : '-'}
-          </div>
-          {/* ✅ BADGE COMPLETADO junto al ganador */}
-          {!isPendiente && ganador === 1 && (
-            <div className="badge-ganador">✓ GANADOR</div>
-          )}
+          <div className="puntos">{!isPendiente ? enf.puntosParticipante1 : '-'}</div>
+          {!isPendiente && ganador === 1 && <div className="badge-ganador">✓ GANADOR</div>}
         </div>
 
-        {/* VS Separator */}
         <div className="vs-separator">VS</div>
 
-        {/* Participante 2 */}
         <div className={`participante ${ganador === 2 ? 'ganador' : ''}`}>
           <div className="info">
             <span className="nombre">{enf.participante2Nombre}</span>
             <span className="robot">🤖 {enf.participante2Robot}</span>
           </div>
-          <div className="puntos">
-            {!isPendiente ? enf.puntosParticipante2 : '-'}
-          </div>
-          {/* ✅ BADGE COMPLETADO junto al ganador */}
-          {!isPendiente && ganador === 2 && (
-            <div className="badge-ganador">✓ GANADOR</div>
-          )}
+          <div className="puntos">{!isPendiente ? enf.puntosParticipante2 : '-'}</div>
+          {!isPendiente && ganador === 2 && <div className="badge-ganador">✓ GANADOR</div>}
         </div>
 
-        {/* Hint para click si está pendiente */}
-        {isPendiente && (
-          <div className="click-hint">👆 Click para registrar</div>
-        )}
+        {isPendiente && <div className="click-hint">👆 Click para registrar</div>}
       </div>
     );
   };
 
   const BracketView = () => {
     if (!bracket || !bracket.bracket) return null;
-
     const fases = ['OCTAVOS', 'CUARTOS', 'SEMIFINAL', 'FINAL'];
     const fasesPresentes = fases.filter(f => bracket.bracket[f]?.length > 0);
 
@@ -290,11 +245,26 @@ function JudgePanel() {
       <div className="dashboard-header">
         <h1>⚖️ Panel del Juez</h1>
         <p>Gestiona torneos activos y registra resultados en tiempo real</p>
+        {/* ✅ Indicador global de carga (opcional, útil para debug/UX) */}
+        {isAnyLoading && (
+          <span style={{
+            display: 'inline-block',
+            padding: '0.3rem 0.8rem',
+            background: 'rgba(0,200,255,0.15)',
+            border: '1px solid rgba(0,200,255,0.4)',
+            borderRadius: '20px',
+            fontSize: '0.8rem',
+            color: 'var(--neon)',
+            marginTop: '0.5rem'
+          }}>
+            ⏳ Procesando...
+          </span>
+        )}
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — navegación simple, no necesitan bloqueo global */}
       <div className="dashboard-tabs">
-        <button 
+        <button
           className={activeTab === 'torneos' ? 'active' : ''}
           onClick={() => {
             setActiveTab('torneos');
@@ -305,14 +275,14 @@ function JudgePanel() {
           🏆 Torneos Activos
         </button>
         {torneoSeleccionado && (
-          <button 
+          <button
             className={activeTab === 'bracket' ? 'active' : ''}
             onClick={() => setActiveTab('bracket')}
           >
             🎯 Bracket: {torneoSeleccionado.nombre}
           </button>
         )}
-        <button 
+        <button
           className={activeTab === 'reportes' ? 'active' : ''}
           onClick={() => setActiveTab('reportes')}
         >
@@ -323,7 +293,6 @@ function JudgePanel() {
       {/* Content */}
       <div className="dashboard-content">
         {error && <div className="error-banner">❌ {error}</div>}
-
         {loading && <div className="loading">⏳ Cargando...</div>}
 
         {/* TAB: TORNEOS */}
@@ -331,9 +300,7 @@ function JudgePanel() {
           <>
             <h2>Torneos Activos</h2>
             {torneos.length === 0 ? (
-              <div className="empty-state">
-                📭 No hay torneos activos en este momento
-              </div>
+              <div className="empty-state">🔭 No hay torneos activos en este momento</div>
             ) : (
               <div className="data-grid">
                 {torneos.map(torneo => {
@@ -346,40 +313,39 @@ function JudgePanel() {
                       <p>{estado.mensaje}</p>
 
                       <div className="button-group">
+                        {/* ✅ Ambos botones de modalidad comparten isAsignando + isAnyLoading */}
                         {estado.accion === 'ASIGNAR_MODALIDAD' && (
                           <>
-                            <button 
+                            <button
                               className="btn-primary"
                               onClick={() => handleAsignarModalidad(torneo.id, 'ELIMINATORIA')}
+                              disabled={isAnyLoading}
                             >
-                              ⚔️ Eliminatoria
+                              {isAsignando ? '⏳ Asignando...' : '⚔️ Eliminatoria'}
                             </button>
-                            <button 
-                              className="btn-primary"
-                              onClick={() => handleAsignarModalidad(torneo.id, 'TODOS_CONTRA_TODOS')}
-                            >
-                              🔄 Todos vs Todos
-                            </button>
+                           
                           </>
                         )}
 
                         {estado.accion === 'GENERAR_ENFRENTAMIENTOS' && (
-                          <button 
+                          <button
                             className="btn-primary"
                             onClick={() => handleGenerarEnfrentamientos(torneo)}
+                            disabled={isAnyLoading}
                           >
-                            🎲 Generar Enfrentamientos
+                            {isGenerando ? '⏳ Generando...' : '🎲 Generar Enfrentamientos'}
                           </button>
                         )}
 
                         {estado.accion === 'VER_BRACKET' && (
-                          <button 
+                          <button
                             className="btn-secondary"
                             onClick={() => {
                               setTorneoSeleccionado(torneo);
                               setActiveTab('bracket');
                               loadBracket(torneo.id);
                             }}
+                            disabled={isAnyLoading}
                           >
                             👁️ Ver Bracket
                           </button>
@@ -403,12 +369,12 @@ function JudgePanel() {
                   {bracket.enfrentamientosCompletados}/{bracket.totalEnfrentamientos} completados
                 </p>
               </div>
-              <button 
+              <button
                 className="btn-primary"
                 onClick={handleAvanzarGanadores}
-                disabled={bracket.enfrentamientosPendientes > 0}
+                disabled={isAnyLoading || bracket.enfrentamientosPendientes > 0}
               >
-                ⏭️ Avanzar Ganadores
+                {isAvanzando ? '⏳ Avanzando...' : '⭐️ Avanzar Ganadores'}
               </button>
             </div>
 
@@ -417,18 +383,16 @@ function JudgePanel() {
         )}
 
         {/* TAB: REPORTES */}
-        {activeTab === 'reportes' && (
-          <JudgeReportsSection />
-        )}
+        {activeTab === 'reportes' && <JudgeReportsSection />}
       </div>
 
       {/* Modal Registrar Resultado */}
       {selectedEnf && (
-        <div className="modal-overlay" onClick={() => setSelectedEnf(null)}>
+        <div className="modal-overlay" onClick={() => !isAnyLoading && setSelectedEnf(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="form-card">
               <h3>⚖️ Registrar Resultado</h3>
-              
+
               <div className="resultado-form">
                 <div className="resultado-input">
                   <label>{selectedEnf.participante1Nombre}</label>
@@ -439,6 +403,7 @@ function JudgePanel() {
                     onChange={(e) => setPuntos1(e.target.value)}
                     placeholder="Puntos"
                     min="0"
+                    disabled={isAnyLoading}
                   />
                 </div>
 
@@ -453,16 +418,25 @@ function JudgePanel() {
                     onChange={(e) => setPuntos2(e.target.value)}
                     placeholder="Puntos"
                     min="0"
+                    disabled={isAnyLoading}
                   />
                 </div>
               </div>
 
               <div className="modal-actions">
-                <button className="btn-secondary" onClick={() => setSelectedEnf(null)}>
+                <button
+                  className="btn-secondary"
+                  onClick={() => setSelectedEnf(null)}
+                  disabled={isAnyLoading}
+                >
                   ❌ Cancelar
                 </button>
-                <button className="btn-primary" onClick={handleRegistrarResultado}>
-                  ✅ Confirmar
+                <button
+                  className="btn-primary"
+                  onClick={handleRegistrarResultado}
+                  disabled={isAnyLoading}
+                >
+                  {isRegistrando ? '⏳ Guardando...' : '✅ Confirmar'}
                 </button>
               </div>
             </div>
